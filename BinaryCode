@@ -1,0 +1,193 @@
+#include <iostream> //For input & Output
+#include <vector>   //For vector output
+#include <iterator> //For ostream_iterator
+
+using namespace std;
+
+class BinaryCode{
+    public:
+    vector<string> decode(string message) {
+        vector<string> decodedStrings;  //Vector output of function
+
+        string Output0(message.size(), 0), Output1(message.size(), 0);  //Output for testing original messaage as starting with a 0 or 1, repsectively
+        Output0[0] = '0';               //Sets the first character in the string to 0
+        Output1[0] = '1';               //Sets the first character in the string to 1
+
+    Output0[1] = message[0] - Output0[0] + '0'; //Do inital computation since there's no Output0[i - 1] available
+    Output1[1] = message[0] - Output1[0] + '0'; //Do inital computation since there's no Output1[i - 1] available
+
+    for (unsigned int i = 1; i < message.length(); i++) {   //For each next integer in the output, subtract two previous Output integers from message integer
+        Output0[i + 1] = message[i] - Output0[i] + '0' - Output0[i - 1] + '0';  //Do this for Output0
+        if (Output0[i + 1] == '-1' || Output0[i + 1] == '2')    //If Output message copntains a -1 or a 2, then the result is NONE
+            Output0 = "NONE";
+
+        Output1[i + 1] = message[i] - Output1[i] + '0' - Output1[i - 1] + '0';  //Do this for Output1
+        if (Output1[i + 1] == '-1' || Output1[i + 1] == '2')    //If Output message copntains a -1 or a 2, then the result is NONE
+            Output1 = "NONE";
+    }
+
+    for (unsigned int j = 0; j < message.length(); j++) {   //Check that each next integer in the message is +/- 1 of previous integer. If not, then Output = NONE
+        if (message[j + 1] == '0') {
+            if (message[j] == '2' || message[j] == '3')
+            Output0 = "NONE";
+            Output1 = "NONE";
+            }
+        if (message[j + 1] == '1' && message[j] == '3') {
+            Output0 = "NONE";
+            Output1 = "NONE";
+            }
+        if (message[j + 1] == '2' && message[j] == '0') {
+            Output0 = "NONE";
+            Output1 = "NONE";
+            }
+        if (message[j + 1] == '3') {
+            if (message[j] == '0' || message[j] == '1')
+            Output0 = "NONE";
+            Output1 = "NONE";
+            }
+    }
+
+    if (message[0] == '2')  //If first int in message is 2, then Output0 = NONE
+        Output0 = "NONE";
+
+    if (message[0] == '0')  //If first int in message is 0, then Output1 = NONE
+        Output1 = "NONE";
+
+
+    if (message.size() == 1) {      //Problem Statement requires all input numbers to be 0 through 3
+        if (message[0] > 1) {
+            Output0 = "NONE";       //If the single-intger message is greater than 1, message cannot be decoded
+            Output1 = "NONE";
+        }
+
+        else if (message[0] == '1')  //If single-integer message is 1, then Output1 is correct, Output0 is not possible.
+            Output0 = "NONE";
+
+        else if (message[0] == '0')  //If single-integer message is 0, then Output0 is correct, Output1 is not possible.
+            Output1 = "NONE";
+        }
+
+    else if (message.size() == 2) { //If input isa two-integer message
+         if (message == "00") {     //And if the message is 00, then Output0 is 00, Ouptut1 = NONE
+             Output0 = "00";
+             Output1 = "NONE";
+         }
+         else if (message == "11") {//And if the message is 11, then Output0 = 01, Output 1 = 10
+             Output0 = "01";
+             Output1 = "10";
+         }
+         else {                     //All other two-integer messages are impossible
+             Output0 = "NONE";
+             Output1 = "NONE";
+         }
+    }
+
+        decodedStrings.push_back(Output0);  //Push Output0 to vector
+        decodedStrings.push_back(Output1);  //Push Output1 to vector
+        return decodedStrings;              //Return vector
+    }
+};
+
+int main()
+{
+    BinaryCode test;
+    vector<string> result;
+
+    result = test.decode("123210122");
+    copy(result.begin(), result.end(), ostream_iterator<string>(cout, " "));
+    cout << endl;
+
+    result = test.decode("11");
+    copy(result.begin(), result.end(), ostream_iterator<string>(cout, " "));
+    cout << endl;
+
+    result = test.decode("22111");
+    copy(result.begin(), result.end(), ostream_iterator<string>(cout, " "));
+    cout << endl;
+
+    result = test.decode("123210120");
+    copy(result.begin(), result.end(), ostream_iterator<string>(cout, " "));
+    cout << endl;
+
+    result = test.decode("3");
+    copy(result.begin(), result.end(), ostream_iterator<string>(cout, " "));
+    cout << endl;
+
+    result = test.decode("12221112222221112221111111112221111");
+    copy(result.begin(), result.end(), ostream_iterator<string>(cout, " "));
+    cout << endl;
+
+    return 0;
+}
+
+/*
+Problem Statement
+    
+Let's say you have a binary string such as the following:
+011100011
+One way to encrypt this string is to add to each digit the sum of its adjacent digits. For example, the above string would become:
+123210122
+In particular, if P is the original string, and Q is the encrypted string, then Q[i] = P[i-1] + P[i] + P[i+1] for all digit positions i. Characters off the left and right edges of the string are treated as zeroes.
+An encrypted string given to you in this format can be decoded as follows (using 123210122 as an example):
+Assume P[0] = 0.
+Because Q[0] = P[0] + P[1] = 0 + P[1] = 1, we know that P[1] = 1.
+Because Q[1] = P[0] + P[1] + P[2] = 0 + 1 + P[2] = 2, we know that P[2] = 1.
+Because Q[2] = P[1] + P[2] + P[3] = 1 + 1 + P[3] = 3, we know that P[3] = 1.
+Repeating these steps gives us P[4] = 0, P[5] = 0, P[6] = 0, P[7] = 1, and P[8] = 1.
+We check our work by noting that Q[8] = P[7] + P[8] = 1 + 1 = 2. Since this equation works out, we are finished, and we have recovered one possible original string.
+Now we repeat the process, assuming the opposite about P[0]:
+Assume P[0] = 1.
+Because Q[0] = P[0] + P[1] = 1 + P[1] = 1, we know that P[1] = 0.
+Because Q[1] = P[0] + P[1] + P[2] = 1 + 0 + P[2] = 2, we know that P[2] = 1.
+Now note that Q[2] = P[1] + P[2] + P[3] = 0 + 1 + P[3] = 3, which leads us to the conclusion that P[3] = 2. However, this violates the fact that each character in the original string must be '0' or '1'. Therefore, there exists no such original string P where the first digit is '1'.
+Note that this algorithm produces at most two decodings for any given encrypted string. There can never be more than one possible way to decode a string once the first binary digit is set.
+Given a string message, containing the encrypted string, return a vector <string> with exactly two elements. The first element should contain the decrypted string assuming the first character is '0'; the second element should assume the first character is '1'. If one of the tests fails, return the string "NONE" in its place. For the above example, you should return {"011100011", "NONE"}.
+Definition
+    
+Class: BinaryCode
+Method: decode
+Parameters: string
+Returns: vector <string>
+Method signature: vector <string> decode(string message) (be sure your method is public)
+
+Limits
+Time limit (s): 2.000
+Memory limit (MB): 64
+
+Constraints
+-
+message will contain between 1 and 50 characters, inclusive.
+-
+Each character in message will be either '0', '1', '2', or '3'.
+Examples
+0)
+"123210122"
+Returns: { "011100011",  "NONE" }
+The example from above.
+
+1)
+"11"
+Returns: { "01",  "10" }
+We know that one of the digits must be '1', and the other must be '0'. We return both cases.
+
+2)
+"22111"
+Returns: { "NONE",  "11001" }
+Since the first digit of the encrypted string is '2', the first two digits of the original string must be '1'. Our test fails when we try to assume that P[0] = 0.
+
+3)
+"123210120"
+Returns: { "NONE",  "NONE" }
+This is the same as the first example, but the rightmost digit has been changed to something inconsistent with the rest of the original string. No solutions are possible.
+
+4)
+"3"
+Returns: { "NONE",  "NONE" }
+
+5)
+"12221112222221112221111111112221111"
+Returns:
+{ "01101001101101001101001001001101001",
+  "10110010110110010110010010010110010" }
+
+This problem statement is the exclusive and proprietary property of TopCoder, Inc. Any unauthorized use or reproduction of this information without the prior written consent of TopCoder, Inc. is strictly prohibited. (c)2003, TopCoder, Inc. All rights reserved.*/
